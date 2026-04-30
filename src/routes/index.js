@@ -7,6 +7,8 @@ import categoryRoutes from './v1/category.routes.js';
 import productRoutes from './v1/product.routes.js';
 import templateRoutes from './v1/template.routes.js';
 import menuRoutes from './v1/menu.routes.js';
+import qrRoutes from './v1/qr.routes.js';
+import publicRoutes from './v1/public.routes.js';
 
 const router = Router();
 
@@ -18,5 +20,7 @@ router.use('/api/v1/categories', categoryRoutes);
 router.use('/api/v1/products', productRoutes);
 router.use('/api/v1/templates', templateRoutes);
 router.use('/api/v1/menus', menuRoutes);
+router.use('/api/v1/qr', qrRoutes);
+router.use('/api/v1/public', publicRoutes);
 
 export default router;

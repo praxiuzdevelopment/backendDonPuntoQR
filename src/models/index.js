@@ -20,6 +20,9 @@ import initMenu         from './Menu.js';
 import initMenuCategory from './MenuCategory.js';
 import initMenuProduct  from './MenuProduct.js';
 
+// ─── Sprint 4 ─────────────────────────────────────────────
+import initQRCode from './QRCode.js';
+
 const Tenant  = initTenant(sequelize);
 const Role    = initRole(sequelize);
 const City    = initCity(sequelize);
@@ -36,6 +39,7 @@ const Template     = initTemplate(sequelize);
 const Menu         = initMenu(sequelize);
 const MenuCategory = initMenuCategory(sequelize);
 const MenuProduct  = initMenuProduct(sequelize);
+const QRCode       = initQRCode(sequelize);
 
 const models = {
   Tenant,
@@ -52,6 +56,7 @@ const models = {
   Menu,
   MenuCategory,
   MenuProduct,
+  QRCode,
 };
 
 Object.values(models).forEach((model) => {
@@ -64,6 +69,6 @@ export {
   sequelize, 
   Tenant, Role, City, License, User, 
   AuditLog, Branch, Category, Product,
-  Schedule, Template, Menu, MenuCategory, MenuProduct 
+  Schedule, Template, Menu, MenuCategory, MenuProduct, QRCode
 };
 export default models;
