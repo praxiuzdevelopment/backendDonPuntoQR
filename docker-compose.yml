@@ -1,0 +1,53 @@
+services:
+  app:
+    build: .
+    container_name: donpunto_api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: menuqr_dev
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_DIALECT: postgres
+      JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_production}
+      JWT_EXPIRES_IN: 8h
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-placeholder}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-placeholder}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-placeholder}
+      QR_PUBLIC_BASE_URL: http://localhost:3000/api/public/q
+      LICENSE_ALERT_DAYS: 7
+      SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL:-superadmin@donpunto.com}
+      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD:-DonPunto2026!}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+  db:
+    image: postgres:17-alpine
+    container_name: donpunto_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: menuqr_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

@@ -1,0 +1,60 @@
+{
+  "name": "backend-don-punto",
+  "version": "1.0.0",
+  "description": "MenuQR SaaS Backend — API REST multi-tenant para menús digitales",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "db:migrate": "node db-tasks.js migrate up",
+    "db:migrate:undo": "node db-tasks.js migrate down",
+    "db:seed": "node db-tasks.js seed up",
+    "db:seed:undo": "node db-tasks.js seed down",
+    "db:reset": "npm run db:migrate:undo && npm run db:migrate && npm run db:seed",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --forceExit",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --forceExit --coverage",
+    "lint": "eslint src/**/*.js"
+  },
+  "keywords": [
+    "saas",
+    "menuqr",
+    "restaurant",
+    "qr",
+    "nodejs"
+  ],
+  "author": "DonPunto",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.6.1",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.13.3",
+    "pg-hstore": "^2.3.4",
+    "qrcode": "^1.5.4",
+    "sequelize": "^6.37.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "umzug": "^3.8.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
+  }
+}
