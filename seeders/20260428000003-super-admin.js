@@ -3,8 +3,12 @@ import bcrypt from 'bcryptjs';
 export default {
   async up(queryInterface) {
     const email    = process.env.SUPER_ADMIN_EMAIL    || 'superadmin@donpunto.com';
-    const password = process.env.SUPER_ADMIN_PASSWORD || 'DonPunto2026!';
+    const password = process.env.SUPER_ADMIN_PASSWORD;
     const name     = process.env.SUPER_ADMIN_NAME     || 'Super Admin DonPunto';
+
+    if (!password) {
+      throw new Error('Fallo de Seguridad: La variable de entorno SUPER_ADMIN_PASSWORD es obligatoria para el seeder.');
+    }
 
     const password_hash = await bcrypt.hash(password, 12);
 
