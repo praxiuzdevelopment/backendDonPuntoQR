@@ -1,3 +1,4 @@
+import AppError from '../utils/AppError.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User, Tenant, License, Role } from '../models/index.js';
@@ -38,12 +39,12 @@ export const login = async ({ email, password }) => {
   });
 
   if (!user) {
-    throw { status: 401, message: 'Credenciales inválidas' };
+    throw new AppError('Credenciales inválidas', 401);
   }
 
   const passwordMatch = await bcrypt.compare(password, user.password_hash);
   if (!passwordMatch) {
-    throw { status: 401, message: 'Credenciales inválidas' };
+    throw new AppError('Credenciales inválidas', 401);
   }
 
   const role        = user.role;

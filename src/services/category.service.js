@@ -1,3 +1,4 @@
+import AppError from '../utils/AppError.js';
 import { Category } from '../models/index.js';
 import { logAction } from '../utils/auditLogger.js';
 
@@ -31,7 +32,7 @@ export const createCategory = async (tenantId, { name, description }, actorId, i
 
 export const updateCategory = async (tenantId, categoryId, { name, description }, actorId, ipAddress) => {
   const category = await Category.findOne({ where: { category_id: categoryId, tenant_id: tenantId } });
-  if (!category) throw { status: 404, message: 'Categoría no encontrada' };
+  if (!category) throw new AppError('Categoría no encontrada', 404);
 
   const oldValues = { name: category.name, description: category.description };
   await category.update({ name, description });
@@ -52,7 +53,7 @@ export const updateCategory = async (tenantId, categoryId, { name, description }
 
 export const toggleCategoryStatus = async (tenantId, categoryId, active, actorId, ipAddress) => {
   const category = await Category.findOne({ where: { category_id: categoryId, tenant_id: tenantId } });
-  if (!category) throw { status: 404, message: 'Categoría no encontrada' };
+  if (!category) throw new AppError('Categoría no encontrada', 404);
 
   const oldValues = { active: category.active };
   await category.update({ active });

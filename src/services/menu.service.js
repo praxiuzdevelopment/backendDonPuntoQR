@@ -1,3 +1,4 @@
+import AppError from '../utils/AppError.js';
 import { sequelize, Menu, MenuCategory, MenuProduct, Category, Product, Template } from '../models/index.js';
 import { logAction } from '../utils/auditLogger.js';
 
@@ -28,7 +29,7 @@ export const getMenuDetail = async (tenantId, menuId) => {
     ]
   });
 
-  if (!menu) throw { status: 404, message: 'Menú no encontrado' };
+  if (!menu) throw new AppError('Menú no encontrado', 404);
 
   // Re-estructuramos la respuesta para que los productos queden dentro de las categorías correspondientes
   const menuJSON = menu.toJSON();
@@ -110,7 +111,7 @@ export const createMenu = async (tenantId, data, actorId, ipAddress) => {
 
 export const updateMenuStructure = async (tenantId, menuId, sections, actorId, ipAddress) => {
   const menu = await Menu.findOne({ where: { menu_id: menuId, tenant_id: tenantId } });
-  if (!menu) throw { status: 404, message: 'Menú no encontrado' };
+  if (!menu) throw new AppError('Menú no encontrado', 404);
 
   // Ejecución Transaccional: Borrar asociaciones viejas y crear nuevas
   const transaction = await sequelize.transaction();
@@ -166,7 +167,7 @@ export const updateMenuStructure = async (tenantId, menuId, sections, actorId, i
   } catch (error) {
     await transaction.rollback();
     console.error('Error in updateMenuStructure transaction:', error);
-    throw { status: 500, message: 'Error actualizando la estructura del menú' };
+    throw new AppError('Error actualizando la estructura del menú', 500);
   }
 };
 

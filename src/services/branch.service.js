@@ -1,3 +1,4 @@
+import AppError from '../utils/AppError.js';
 import { Branch, City, User } from '../models/index.js';
 import { logAction } from '../utils/auditLogger.js';
 
@@ -14,7 +15,7 @@ export const listBranches = async (tenantId) => {
 
 export const updateBranch = async (tenantId, branchId, data, actorId, ipAddress) => {
   const branch = await Branch.findOne({ where: { branch_id: branchId, tenant_id: tenantId } });
-  if (!branch) throw { status: 404, message: 'Sucursal no encontrada' };
+  if (!branch) throw new AppError('Sucursal no encontrada', 404);
 
   // Filtrar los campos que realmente se permiten actualizar
   const { name, address, city_id, phone_1, whatsapp_number, instagram_url, facebook_url, tiktok_url, active } = data;
@@ -56,11 +57,11 @@ export const updateBranch = async (tenantId, branchId, data, actorId, ipAddress)
 
 export const assignManager = async (tenantId, branchId, managerId, actorId, ipAddress) => {
   const branch = await Branch.findOne({ where: { branch_id: branchId, tenant_id: tenantId } });
-  if (!branch) throw { status: 404, message: 'Sucursal no encontrada' };
+  if (!branch) throw new AppError('Sucursal no encontrada', 404);
 
   if (managerId !== null) {
     const user = await User.findOne({ where: { user_id: managerId, tenant_id: tenantId } });
-    if (!user) throw { status: 400, message: 'Usuario manager no válido para este tenant' };
+    if (!user) throw new AppError('Usuario manager no válido para este tenant', 400);
   }
 
   const oldValues = { manager_id: branch.manager_id };

@@ -1,3 +1,4 @@
+import AppError from '../utils/AppError.js';
 import bcrypt from 'bcryptjs';
 import { User, Role } from '../models/index.js';
 import { logAction } from '../utils/auditLogger.js';
@@ -13,13 +14,13 @@ export const listUsers = async (tenantId) => {
 export const createUser = async (tenantId, { name, email, password, role_id }, actorId, ipAddress) => {
   const emailExists = await User.findOne({ where: { email: email.toLowerCase().trim() } });
   if (emailExists) {
-    throw { status: 409, message: 'El email ya está registrado' };
+    throw new AppError('El email ya está registrado', 409);
   }
 
   // Prevent creating super_admin
   const role = await Role.findByPk(role_id);
   if (!role || role.name === 'super_admin') {
-    throw { status: 400, message: 'Rol inválido' };
+    throw new AppError('Rol inválido', 400);
   }
 
   const password_hash = await bcrypt.hash(password, 12);
@@ -49,12 +50,12 @@ export const createUser = async (tenantId, { name, email, password, role_id }, a
 
 export const updateUser = async (tenantId, userId, { name, role_id }, actorId, ipAddress) => {
   const user = await User.findOne({ where: { user_id: userId, tenant_id: tenantId } });
-  if (!user) throw { status: 404, message: 'Usuario no encontrado' };
+  if (!user) throw new AppError('Usuario no encontrado', 404);
 
   if (role_id) {
     const role = await Role.findByPk(role_id);
     if (!role || role.name === 'super_admin') {
-      throw { status: 400, message: 'Rol inválido' };
+      throw new AppError('Rol inválido', 400);
     }
   }
 
@@ -77,7 +78,7 @@ export const updateUser = async (tenantId, userId, { name, role_id }, actorId, i
 
 export const toggleUserStatus = async (tenantId, userId, active, actorId, ipAddress) => {
   const user = await User.findOne({ where: { user_id: userId, tenant_id: tenantId } });
-  if (!user) throw { status: 404, message: 'Usuario no encontrado' };
+  if (!user) throw new AppError('Usuario no encontrado', 404);
 
   const oldValues = { active: user.active };
   await user.update({ active });

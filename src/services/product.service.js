@@ -1,3 +1,4 @@
+import AppError from '../utils/AppError.js';
 import { Op } from 'sequelize';
 import csvParser from 'csv-parser';
 import * as xlsx from 'xlsx';
@@ -70,7 +71,7 @@ export const createProduct = async (tenantId, data, file, actorId, ipAddress) =>
 
 export const updateProduct = async (tenantId, productId, data, file, actorId, ipAddress) => {
   const product = await Product.findOne({ where: { product_id: productId, tenant_id: tenantId } });
-  if (!product) throw { status: 404, message: 'Producto no encontrado' };
+  if (!product) throw new AppError('Producto no encontrado', 404);
 
   let image_url = product.image_url;
   if (file) {
@@ -118,7 +119,7 @@ export const updateProduct = async (tenantId, productId, data, file, actorId, ip
 
 export const toggleStock = async (tenantId, productId, data, actorId, ipAddress) => {
   const product = await Product.findOne({ where: { product_id: productId, tenant_id: tenantId } });
-  if (!product) throw { status: 404, message: 'Producto no encontrado' };
+  if (!product) throw new AppError('Producto no encontrado', 404);
 
   const { available, restock_at, restock_qty } = data;
   const oldValues = { available: product.available, restock_at: product.restock_at, restock_qty: product.restock_qty };
@@ -144,7 +145,7 @@ export const toggleStock = async (tenantId, productId, data, actorId, ipAddress)
 };
 
 export const bulkUpload = async (tenantId, file, actorId, ipAddress) => {
-  if (!file) throw { status: 400, message: 'Archivo requerido' };
+  if (!file) throw new AppError('Archivo requerido', 400);
 
   const productsData = [];
 
@@ -165,7 +166,7 @@ export const bulkUpload = async (tenantId, file, actorId, ipAddress) => {
     productsData.push(...rows);
   }
 
-  if (productsData.length === 0) throw { status: 400, message: 'El archivo está vacío' };
+  if (productsData.length === 0) throw new AppError('El archivo está vacío', 400);
 
   let insertedCount = 0;
 

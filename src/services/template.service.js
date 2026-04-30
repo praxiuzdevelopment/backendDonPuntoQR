@@ -1,3 +1,4 @@
+import AppError from '../utils/AppError.js';
 import { Template } from '../models/index.js';
 
 export const listTemplates = async () => {

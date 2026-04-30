@@ -1,3 +1,4 @@
+import AppError from '../utils/AppError.js';
 import bcrypt from 'bcryptjs';
 import { sequelize, Tenant, User, License, Role } from '../models/index.js';
 
@@ -5,10 +6,10 @@ const slugify = (text) =>
   text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
+    .replaceAll(/[\u0300-\u036f]/g, '')
+    .replaceAll(/[^a-z0-9\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '-');
+    .replaceAll(/\s+/g, '-');
 
 const ensureUniqueSlug = async (baseSlug) => {
   let slug    = baseSlug;
@@ -22,14 +23,14 @@ const ensureUniqueSlug = async (baseSlug) => {
 export const createTenant = async ({ name, email, password, plan = 'basic', license_days = 30, city_id = null }) => {
   const emailExists = await User.findOne({ where: { email: email.toLowerCase().trim() } });
   if (emailExists) {
-    throw { status: 409, message: 'El email ya está registrado en el sistema' };
+    throw new AppError('El email ya está registrado en el sistema', 409);
   }
 
   const baseSlug = slugify(name);
   const slug     = await ensureUniqueSlug(baseSlug);
 
   const adminRole = await Role.findOne({ where: { name: 'admin' } });
-  if (!adminRole) throw { status: 500, message: 'Rol admin no encontrado. Ejecuta los seeders.' };
+  if (!adminRole) throw new AppError('Rol admin no encontrado. Ejecuta los seeders.', 500);
 
   const password_hash = await bcrypt.hash(password, 12);
 
@@ -88,7 +89,7 @@ export const listTenants = async () => {
 
 export const setTenantStatus = async (tenantId, active) => {
   const tenant = await Tenant.findByPk(tenantId);
-  if (!tenant) throw { status: 404, message: 'Tenant no encontrado' };
+  if (!tenant) throw new AppError('Tenant no encontrado', 404);
 
   await tenant.update({ active });
   return { tenant_id: tenantId, active };
@@ -96,13 +97,13 @@ export const setTenantStatus = async (tenantId, active) => {
 
 export const renewLicense = async (tenantId, { plan, license_days }) => {
   const tenant = await Tenant.findByPk(tenantId);
-  if (!tenant) throw { status: 404, message: 'Tenant no encontrado' };
+  if (!tenant) throw new AppError('Tenant no encontrado', 404);
 
   const startDate = new Date();
   const endDate   = new Date();
   endDate.setDate(endDate.getDate() + license_days);
 
-  const [license] = await License.upsert({
+  await License.upsert({
     tenant_id:  tenantId,
     name:       plan,
     plan,

@@ -1,9 +1,10 @@
+import AppError from '../utils/AppError.js';
 import { Schedule, Branch } from '../models/index.js';
 import { logAction } from '../utils/auditLogger.js';
 
 export const updateSchedules = async (tenantId, branchId, schedulesArray, actorId, ipAddress) => {
   const branch = await Branch.findOne({ where: { branch_id: branchId, tenant_id: tenantId } });
-  if (!branch) throw { status: 404, message: 'Sucursal no encontrada' };
+  if (!branch) throw new AppError('Sucursal no encontrada', 404);
 
   // Eliminar horarios anteriores para esta sucursal (estrategia transaccional implícita o explícita)
   await Schedule.destroy({ where: { branch_id: branchId } });

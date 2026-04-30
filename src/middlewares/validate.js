@@ -1,4 +1,3 @@
-import Joi from 'joi';
 
 /**
  * Middleware para validar el body, query o params de una petición usando Joi.
