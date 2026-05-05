@@ -10,16 +10,28 @@ export const listCategories = async (req, res) => {
   }
 };
 
+export const getCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const category = await categoryService.getCategoryById(req.user.tenant_id, id);
+    return res.status(200).json({ success: true, data: category });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[category.controller] getCategory:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
 export const createCategory = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, active } = req.body;
     if (!name) {
       return res.status(422).json({ success: false, message: 'El nombre es requerido' });
     }
 
     const result = await categoryService.createCategory(
       req.user.tenant_id,
-      { name, description },
+      { name, description, active },
       req.user.id,
       req.ip
     );

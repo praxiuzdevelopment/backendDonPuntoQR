@@ -10,6 +10,18 @@ export const listProducts = async (req, res) => {
   }
 };
 
+export const getProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await productService.getProductById(req.user.tenant_id, id);
+    return res.status(200).json({ success: true, data: product });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[product.controller] getProduct:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
 export const createProduct = async (req, res) => {
   try {
     const { name, category_id, price } = req.body;

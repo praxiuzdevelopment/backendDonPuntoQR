@@ -13,16 +13,29 @@ export const listBranches = async (tenantId) => {
   });
 };
 
+export const getBranchById = async (tenantId, branchId) => {
+  const branch = await Branch.findOne({
+    where: { branch_id: branchId, tenant_id: tenantId },
+    include: [
+      { model: City, as: 'city', attributes: ['description'] },
+      { model: User, as: 'manager', attributes: ['name', 'email'] },
+    ],
+  });
+  if (!branch) throw new AppError('Sucursal no encontrada', 404);
+  return branch;
+};
+
 export const updateBranch = async (tenantId, branchId, data, actorId, ipAddress) => {
   const branch = await Branch.findOne({ where: { branch_id: branchId, tenant_id: tenantId } });
   if (!branch) throw new AppError('Sucursal no encontrada', 404);
 
   // Filtrar los campos que realmente se permiten actualizar
-  const { name, address, city_id, phone_1, whatsapp_number, instagram_url, facebook_url, tiktok_url, active } = data;
+  const { name, address, city_id, phone_1, phone_2, email, whatsapp_number, instagram_url, facebook_url, tiktok_url, active } = data;
 
   const oldValues = {
     name: branch.name, address: branch.address, city_id: branch.city_id,
-    phone_1: branch.phone_1, whatsapp_number: branch.whatsapp_number,
+    phone_1: branch.phone_1, phone_2: branch.phone_2, email: branch.email,
+    whatsapp_number: branch.whatsapp_number,
     instagram_url: branch.instagram_url, facebook_url: branch.facebook_url, tiktok_url: branch.tiktok_url,
     active: branch.active
   };
@@ -32,6 +45,8 @@ export const updateBranch = async (tenantId, branchId, data, actorId, ipAddress)
     address: address !== undefined ? address : branch.address,
     city_id: city_id !== undefined ? city_id : branch.city_id,
     phone_1: phone_1 !== undefined ? phone_1 : branch.phone_1,
+    phone_2: phone_2 !== undefined ? phone_2 : branch.phone_2,
+    email: email !== undefined ? email : branch.email,
     whatsapp_number: whatsapp_number !== undefined ? whatsapp_number : branch.whatsapp_number,
     instagram_url: instagram_url !== undefined ? instagram_url : branch.instagram_url,
     facebook_url: facebook_url !== undefined ? facebook_url : branch.facebook_url,

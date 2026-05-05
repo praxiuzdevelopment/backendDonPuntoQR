@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
-import { listBranches, updateBranch, assignManager } from '../../controllers/branch.controller.js';
+import { listBranches, getBranch, updateBranch, assignManager } from '../../controllers/branch.controller.js';
 import { updateSchedules } from '../../controllers/schedule.controller.js';
 
 const router = Router();
@@ -32,6 +32,28 @@ router.get('/', listBranches);
 /**
  * @swagger
  * /api/v1/branches/{id}:
+ *   get:
+ *     summary: Obtener datos de una sucursal específica
+ *     tags: [Branches]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Datos de la sucursal
+ *       404:
+ *         description: Sucursal no encontrada
+ */
+router.get('/:id', getBranch);
+
+/**
+ * @swagger
+ * /api/v1/branches/{id}:
  *   put:
  *     summary: Actualizar datos de la sucursal (configuración)
  *     tags: [Branches]
@@ -57,6 +79,10 @@ router.get('/', listBranches);
  *               city_id:
  *                 type: integer
  *               phone_1:
+ *                 type: string
+ *               phone_2:
+ *                 type: string
+ *               email:
  *                 type: string
  *               whatsapp_number:
  *                 type: string

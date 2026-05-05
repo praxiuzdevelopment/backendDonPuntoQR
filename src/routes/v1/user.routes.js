@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
-import { listUsers, createUser, updateUser, toggleUserStatus } from '../../controllers/user.controller.js';
+import { listUsers, getUser, createUser, updateUser, toggleUserStatus } from '../../controllers/user.controller.js';
 
 const router = Router();
 
@@ -30,6 +30,28 @@ router.get('/', listUsers);
 
 /**
  * @swagger
+ * /api/v1/users/{id}:
+ *   get:
+ *     summary: Obtener datos de un usuario específico
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Datos del usuario
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.get('/:id', getUser);
+
+/**
+ * @swagger
  * /api/v1/users:
  *   post:
  *     summary: Crear un usuario en el tenant
@@ -46,13 +68,19 @@ router.get('/', listUsers);
  *             properties:
  *               name:
  *                 type: string
+ *               last_name:
+ *                 type: string
  *               email:
  *                 type: string
- *                 format: email
+ *               phone:
+ *                 type: string
  *               password:
  *                 type: string
  *               role_id:
  *                 type: integer
+ *               active:
+ *                 type: boolean
+ *                 default: true
  *     responses:
  *       201:
  *         description: Usuario creado
@@ -82,8 +110,16 @@ router.post('/', createUser);
  *             properties:
  *               name:
  *                 type: string
+ *               last_name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
  *               role_id:
  *                 type: integer
+ *               active:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Usuario actualizado

@@ -9,7 +9,9 @@ export default (sequelize) => {
     role_id:       { type: DataTypes.INTEGER, allowNull: false,
                      references: { model: 'role', key: 'role_id' } },
     name:          { type: DataTypes.STRING(150), allowNull: false },
+    last_name:     { type: DataTypes.STRING(150), allowNull: true },
     email:         { type: DataTypes.STRING(150), allowNull: false, unique: true },
+    phone:         { type: DataTypes.STRING(50), allowNull: true },
     password_hash: { type: DataTypes.STRING(255), allowNull: false },
     active:        { type: DataTypes.BOOLEAN, defaultValue: true },
   }, {

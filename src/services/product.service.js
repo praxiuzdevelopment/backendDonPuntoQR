@@ -11,7 +11,7 @@ export const listProducts = async (tenantId) => {
   const products = await Product.findAll({
     where: { tenant_id: tenantId },
     include: [{ model: Category, as: 'category', attributes: ['name'] }],
-    order: [['name', 'ASC']],
+    order: [['sort_order', 'ASC'], ['name', 'ASC']],
   });
 
   // Lógica de auto-restock: si restock_at <= NOW(), available = true
@@ -29,6 +29,15 @@ export const listProducts = async (tenantId) => {
   return updatedProducts;
 };
 
+export const getProductById = async (tenantId, productId) => {
+  const product = await Product.findOne({
+    where: { product_id: productId, tenant_id: tenantId },
+    include: [{ model: Category, as: 'category', attributes: ['name'] }],
+  });
+  if (!product) throw new AppError('Producto no encontrado', 404);
+  return product;
+};
+
 export const createProduct = async (tenantId, data, file, actorId, ipAddress) => {
   let image_url = null;
 
@@ -41,8 +50,8 @@ export const createProduct = async (tenantId, data, file, actorId, ipAddress) =>
     image_url = uploadResult.secure_url;
   }
 
-  const { name, description, category_id, price, featured, available, is_combo, active } = data;
-
+  const { name, description, category_id, price, featured, available, is_combo, sort_order, active } = data;
+ 
   const product = await Product.create({
     tenant_id: tenantId,
     category_id,
@@ -53,6 +62,7 @@ export const createProduct = async (tenantId, data, file, actorId, ipAddress) =>
     featured: featured || false,
     available: available !== undefined ? available : true,
     is_combo: is_combo || false,
+    sort_order: sort_order || 0,
     active: active !== undefined ? active : true,
   });
 
@@ -83,14 +93,14 @@ export const updateProduct = async (tenantId, productId, data, file, actorId, ip
     image_url = uploadResult.secure_url;
   }
 
-  const { name, description, category_id, price, featured, available, is_combo, active } = data;
-
+  const { name, description, category_id, price, featured, available, is_combo, sort_order, active } = data;
+ 
   const oldValues = {
     name: product.name, description: product.description, category_id: product.category_id,
     price: product.price, image_url: product.image_url, featured: product.featured,
-    available: product.available, is_combo: product.is_combo, active: product.active
+    available: product.available, is_combo: product.is_combo, sort_order: product.sort_order, active: product.active
   };
-
+ 
   await product.update({
     name: name !== undefined ? name : product.name,
     description: description !== undefined ? description : product.description,
@@ -100,6 +110,7 @@ export const updateProduct = async (tenantId, productId, data, file, actorId, ip
     featured: featured !== undefined ? featured : product.featured,
     available: available !== undefined ? available : product.available,
     is_combo: is_combo !== undefined ? is_combo : product.is_combo,
+    sort_order: sort_order !== undefined ? sort_order : product.sort_order,
     active: active !== undefined ? active : product.active,
   });
 

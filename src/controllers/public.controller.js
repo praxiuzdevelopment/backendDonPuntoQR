@@ -101,12 +101,13 @@ export const getMenuByQRCode = catchAsync(async (req, res) => {
                 model: Product,
                 as: 'products',
                 where: { active: true, available: true },
-                required: false
+                required: false,
+                order: [['sort_order', 'ASC'], ['name', 'ASC']]
               }
             ]
           }
         ],
-        order: [['display_order', 'ASC']]
+        order: [['display_order', 'ASC'], [{ model: Category, as: 'category' }, 'sort_order', 'ASC']]
       }
     ]
   });

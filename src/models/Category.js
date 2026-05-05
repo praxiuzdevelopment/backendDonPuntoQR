@@ -6,6 +6,7 @@ export default (sequelize) => {
     tenant_id:   { type: DataTypes.INTEGER, allowNull: false },
     name:        { type: DataTypes.STRING(150), allowNull: false },
     description: { type: DataTypes.STRING(255), allowNull: true },
+    sort_order:  { type: DataTypes.INTEGER, defaultValue: 0 },
     active:      { type: DataTypes.BOOLEAN, defaultValue: true },
   }, {
     tableName:   'category',

@@ -1,15 +1,14 @@
 import AppError from '../utils/AppError.js';
 import bcrypt from 'bcryptjs';
-import { sequelize, Tenant, User, License, Role } from '../models/index.js';
+import { sequelize, Tenant, User, License, Role, Branch } from '../models/index.js';
 
 const slugify = (text) =>
   text
     .toLowerCase()
     .normalize('NFD')
     .replaceAll(/[\u0300-\u036f]/g, '')
-    .replaceAll(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replaceAll(/\s+/g, '-');
+    .replaceAll(/[^a-z0-9]/g, '')
+    .trim();
 
 const ensureUniqueSlug = async (baseSlug) => {
   let slug    = baseSlug;
@@ -20,13 +19,23 @@ const ensureUniqueSlug = async (baseSlug) => {
   return slug;
 };
 
-export const createTenant = async ({ name, email, password, plan = 'basic', license_days = 30, city_id = null }) => {
+export const createTenant = async ({
+  establishment_name,
+  admin_name,
+  last_name = null,
+  email,
+  phone = null,
+  password,
+  plan = 'basic',
+  license_days = 30,
+  city_id = null
+}) => {
   const emailExists = await User.findOne({ where: { email: email.toLowerCase().trim() } });
   if (emailExists) {
     throw new AppError('El email ya está registrado en el sistema', 409);
   }
 
-  const baseSlug = slugify(name);
+  const baseSlug = slugify(establishment_name);
   const slug     = await ensureUniqueSlug(baseSlug);
 
   const adminRole = await Role.findOne({ where: { name: 'admin' } });
@@ -39,16 +48,32 @@ export const createTenant = async ({ name, email, password, plan = 'basic', lice
   endDate.setDate(endDate.getDate() + license_days);
 
   const result = await sequelize.transaction(async (t) => {
-    const tenant = await Tenant.create({ name, slug, active: true }, { transaction: t });
+    const tenant = await Tenant.create(
+      { name: establishment_name, slug, active: true },
+      { transaction: t }
+    );
 
     const user = await User.create(
       {
         tenant_id:     tenant.tenant_id,
         role_id:       adminRole.role_id,
-        name,
+        name:          admin_name,
+        last_name,
         email:         email.toLowerCase().trim(),
+        phone,
         password_hash,
         active:        true,
+      },
+      { transaction: t }
+    );
+
+    // Crear sucursal principal automáticamente
+    await Branch.create(
+      {
+        tenant_id: tenant.tenant_id,
+        name: 'Sede Principal',
+        address: 'Dirección por completar',
+        active: true,
       },
       { transaction: t }
     );

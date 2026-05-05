@@ -2,16 +2,40 @@ import adminService from '../services/admin.service.js';
 
 export const createTenant = async (req, res) => {
   try {
-    const { name, email, password, plan, license_days, city_id } = req.body;
+    const { 
+      establishment_name, 
+      admin_name, 
+      last_name, 
+      email, 
+      phone, 
+      password, 
+      plan, 
+      license_days, 
+      city_id,
+      name // Para compatibilidad si aún se envía
+    } = req.body;
 
-    if (!name || !email || !password) {
+    const finalEstablishmentName = establishment_name || name;
+    const finalAdminName = admin_name || name;
+
+    if (!finalEstablishmentName || !finalAdminName || !email || !password) {
       return res.status(422).json({
         success: false,
-        message: 'name, email y password son requeridos',
+        message: 'establishment_name (o name), admin_name, email y password son requeridos',
       });
     }
 
-    const result = await adminService.createTenant({ name, email, password, plan, license_days, city_id });
+    const result = await adminService.createTenant({ 
+      establishment_name: finalEstablishmentName, 
+      admin_name: finalAdminName,
+      last_name,
+      email, 
+      phone,
+      password, 
+      plan, 
+      license_days, 
+      city_id 
+    });
     return res.status(201).json({ success: true, data: result });
   } catch (error) {
     if (error.status) return res.status(error.status).json({ success: false, message: error.message });

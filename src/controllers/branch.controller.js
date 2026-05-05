@@ -10,6 +10,18 @@ export const listBranches = async (req, res) => {
   }
 };
 
+export const getBranch = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const branch = await branchService.getBranchById(req.user.tenant_id, id);
+    return res.status(200).json({ success: true, data: branch });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[branch.controller] getBranch:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
 export const updateBranch = async (req, res) => {
   try {
     const { id } = req.params;

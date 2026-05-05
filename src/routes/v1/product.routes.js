@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
 import { upload } from '../../middlewares/upload.js';
-import { listProducts, createProduct, updateProduct, toggleStock, bulkUpload } from '../../controllers/product.controller.js';
+import { listProducts, getProduct, createProduct, updateProduct, toggleStock, bulkUpload } from '../../controllers/product.controller.js';
 
 const router = Router();
 
@@ -31,6 +31,28 @@ router.get('/', listProducts);
 
 /**
  * @swagger
+ * /api/v1/products/{id}:
+ *   get:
+ *     summary: Obtener datos de un producto específico
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Datos del producto
+ *       404:
+ *         description: Producto no encontrado
+ */
+router.get('/:id', getProduct);
+
+/**
+ * @swagger
  * /api/v1/products:
  *   post:
  *     summary: Crear un producto (soporta imagen vía multipart/form-data)
@@ -46,10 +68,24 @@ router.get('/', listProducts);
  *             properties:
  *               name:
  *                 type: string
+ *               description:
+ *                 type: string
  *               category_id:
  *                 type: integer
  *               price:
  *                 type: number
+ *               active:
+ *                 type: boolean
+ *                 default: true
+ *               featured:
+ *                 type: boolean
+ *                 default: false
+ *               available:
+ *                 type: boolean
+ *                 default: true
+ *               is_combo:
+ *                 type: boolean
+ *                 default: false
  *               image:
  *                 type: string
  *                 format: binary

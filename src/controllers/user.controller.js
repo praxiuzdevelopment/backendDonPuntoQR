@@ -10,16 +10,28 @@ export const listUsers = async (req, res) => {
   }
 };
 
+export const getUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await userService.getUserById(req.user.tenant_id, id);
+    return res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[user.controller] getUser:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
 export const createUser = async (req, res) => {
   try {
-    const { name, email, password, role_id } = req.body;
+    const { name, last_name, email, phone, password, role_id, active } = req.body;
     if (!name || !email || !password || !role_id) {
       return res.status(422).json({ success: false, message: 'Campos requeridos faltantes' });
     }
 
     const result = await userService.createUser(
       req.user.tenant_id,
-      { name, email, password, role_id },
+      { name, last_name, email, phone, password, role_id, active },
       req.user.id,
       req.ip
     );
@@ -34,12 +46,12 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, role_id } = req.body;
+    const { name, last_name, email, phone, role_id, active } = req.body;
 
     const result = await userService.updateUser(
       req.user.tenant_id,
       id,
-      { name, role_id },
+      { name, last_name, email, phone, role_id, active },
       req.user.id,
       req.ip
     );

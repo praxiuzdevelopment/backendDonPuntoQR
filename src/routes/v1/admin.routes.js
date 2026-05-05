@@ -38,13 +38,22 @@ router.use(authenticate, requireRole('super_admin'));
  *             type: object
  *             required: [name, email, password]
  *             properties:
- *               name:
+ *               establishment_name:
  *                 type: string
  *                 example: "Piqueteadero Don Juan"
+ *               admin_name:
+ *                 type: string
+ *                 example: "Juan"
+ *               last_name:
+ *                 type: string
+ *                 example: "García"
  *               email:
  *                 type: string
  *                 format: email
  *                 example: "admin@donjuan.com"
+ *               phone:
+ *                 type: string
+ *                 example: "3001234567"
  *               password:
  *                 type: string
  *                 example: "Temporal123!"

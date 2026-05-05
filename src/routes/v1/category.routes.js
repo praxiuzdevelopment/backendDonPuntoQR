@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
-import { listCategories, createCategory, updateCategory, toggleCategoryStatus } from '../../controllers/category.controller.js';
+import { listCategories, getCategory, createCategory, updateCategory, toggleCategoryStatus } from '../../controllers/category.controller.js';
 
 const router = Router();
 
@@ -27,6 +27,28 @@ router.use(authenticate, requireRole('admin'));
  *         description: Lista de categorías
  */
 router.get('/', listCategories);
+
+/**
+ * @swagger
+ * /api/v1/categories/{id}:
+ *   get:
+ *     summary: Obtener datos de una categoría específica
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Datos de la categoría
+ *       404:
+ *         description: Categoría no encontrada
+ */
+router.get('/:id', getCategory);
 
 /**
  * @swagger

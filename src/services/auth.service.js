@@ -17,16 +17,19 @@ export const generateToken = (user, role, tenantSlug = null) => {
   );
 };
 
-export const getLicenseDays = async (tenantId) => {
-  if (!tenantId) return null;
+export const getLicenseData = async (tenantId) => {
+  if (!tenantId) return { days: null, end_date: null };
 
   const license = await License.findOne({ where: { tenant_id: tenantId } });
-  if (!license) return 0;
+  if (!license) return { days: 0, end_date: null };
 
   const today = new Date();
   const end   = new Date(license.end_date);
   const diff  = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-  return Math.max(diff, 0);
+  return {
+    days: Math.max(diff, 0),
+    end_date: license.end_date,
+  };
 };
 
 export const login = async ({ email, password }) => {
@@ -49,16 +52,17 @@ export const login = async ({ email, password }) => {
 
   const role        = user.role;
   const token       = generateToken(user, role);
-  const licenseDays = await getLicenseDays(user.tenant_id);
+  const licenseData = await getLicenseData(user.tenant_id);
 
   return {
     restaurant_name: user.tenant?.name || 'DonPunto Admin',
     user:            user.name,
     role:            user.role_id,
     token,
-    license_days:    licenseDays,
+    license_days:    licenseData.days,
+    license_end_date: licenseData.end_date,
     slug:            user.tenant?.slug || null,
   };
 };
 
-export default { login, generateToken, getLicenseDays };
+export default { login, generateToken, getLicenseData };

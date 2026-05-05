@@ -12,6 +12,7 @@ export default (sequelize) => {
     featured:    { type: DataTypes.BOOLEAN, defaultValue: false },
     available:   { type: DataTypes.BOOLEAN, defaultValue: true },
     is_combo:    { type: DataTypes.BOOLEAN, defaultValue: false },
+    sort_order:  { type: DataTypes.INTEGER, defaultValue: 0 },
     restock_at:  { type: DataTypes.DATE, allowNull: true },
     restock_qty: { type: DataTypes.INTEGER, allowNull: true },
     active:      { type: DataTypes.BOOLEAN, defaultValue: true },

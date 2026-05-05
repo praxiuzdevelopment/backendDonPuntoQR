@@ -8,6 +8,8 @@ export default (sequelize) => {
     name:            { type: DataTypes.STRING(150), allowNull: false },
     address:         { type: DataTypes.STRING(255), allowNull: false },
     phone_1:         { type: DataTypes.STRING(50), allowNull: true },
+    phone_2:         { type: DataTypes.STRING(50), allowNull: true },
+    email:           { type: DataTypes.STRING(150), allowNull: true },
     whatsapp_number: { type: DataTypes.STRING(50), allowNull: true },
     instagram_url:   { type: DataTypes.STRING(255), allowNull: true },
     facebook_url:    { type: DataTypes.STRING(255), allowNull: true },
