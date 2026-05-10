@@ -2,10 +2,15 @@ import userService from '../services/user.service.js';
 
 export const listUsers = async (req, res) => {
   try {
-    const users = await userService.listUsers(req.user.tenant_id);
+    const tenantId = req.user.tenant_id;
+    if (!tenantId) {
+      console.warn('[user.controller] listUsers: No tenant_id in token for user', req.user.user_id);
+      return res.status(400).json({ success: false, message: 'No se pudo identificar el restaurante' });
+    }
+    const users = await userService.listUsers(tenantId);
     return res.status(200).json({ success: true, data: users });
   } catch (error) {
-    console.error('[user.controller] listUsers:', error);
+    console.error('[user.controller] listUsers Error:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };

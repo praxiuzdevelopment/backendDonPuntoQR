@@ -2,10 +2,15 @@ import branchService from '../services/branch.service.js';
 
 export const listBranches = async (req, res) => {
   try {
-    const branches = await branchService.listBranches(req.user.tenant_id);
+    const tenantId = req.user.tenant_id;
+    if (!tenantId) {
+      console.warn('[branch.controller] listBranches: No tenant_id in token for user', req.user.user_id);
+      return res.status(400).json({ success: false, message: 'No se pudo identificar el restaurante' });
+    }
+    const branches = await branchService.listBranches(tenantId);
     return res.status(200).json({ success: true, data: branches });
   } catch (error) {
-    console.error('[branch.controller] listBranches:', error);
+    console.error('[branch.controller] listBranches Error:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };

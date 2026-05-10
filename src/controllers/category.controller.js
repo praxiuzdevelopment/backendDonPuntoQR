@@ -2,10 +2,15 @@ import categoryService from '../services/category.service.js';
 
 export const listCategories = async (req, res) => {
   try {
-    const categories = await categoryService.listCategories(req.user.tenant_id);
+    const tenantId = req.user.tenant_id;
+    if (!tenantId) {
+      console.warn('[category.controller] listCategories: No tenant_id in token for user', req.user.user_id);
+      return res.status(400).json({ success: false, message: 'No se pudo identificar el restaurante' });
+    }
+    const categories = await categoryService.listCategories(tenantId);
     return res.status(200).json({ success: true, data: categories });
   } catch (error) {
-    console.error('[category.controller] listCategories:', error);
+    console.error('[category.controller] listCategories Error:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };

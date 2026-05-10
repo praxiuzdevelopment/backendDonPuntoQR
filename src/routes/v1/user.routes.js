@@ -24,7 +24,35 @@ router.use(authenticate, requireRole('admin'));
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de usuarios
+ *         description: Lista de usuarios obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       user_id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       last_name:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       phone:
+ *                         type: string
+ *                       role:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
  */
 router.get('/', listUsers);
 

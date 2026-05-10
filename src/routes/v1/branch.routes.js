@@ -25,7 +25,38 @@ router.use(authenticate, requireRole('admin'));
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de sucursales
+ *         description: Lista de sucursales obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       branch_id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       address:
+ *                         type: string
+ *                       city:
+ *                         type: object
+ *                         properties:
+ *                           description:
+ *                             type: string
+ *                       manager:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                           email:
+ *                             type: string
  */
 router.get('/', listBranches);
 
@@ -45,7 +76,34 @@ router.get('/', listBranches);
  *           type: integer
  *     responses:
  *       200:
- *         description: Datos de la sucursal
+ *         description: Datos de la sucursal obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     branch_id:
+ *                       type: integer
+ *                     name:
+ *                       type: string
+ *                     address:
+ *                       type: string
+ *                     phone_1:
+ *                       type: string
+ *                     phone_2:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     whatsapp_number:
+ *                       type: string
+ *                     active:
+ *                       type: boolean
  *       404:
  *         description: Sucursal no encontrada
  */

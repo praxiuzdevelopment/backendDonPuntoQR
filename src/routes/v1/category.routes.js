@@ -24,7 +24,30 @@ router.use(authenticate, requireRole('admin'));
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de categorías
+ *         description: Lista de categorías obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category_id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       sort_order:
+ *                         type: integer
+ *                       active:
+ *                         type: boolean
  */
 router.get('/', listCategories);
 
@@ -44,7 +67,28 @@ router.get('/', listCategories);
  *           type: integer
  *     responses:
  *       200:
- *         description: Datos de la categoría
+ *         description: Datos de la categoría obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     category_id:
+ *                       type: integer
+ *                     name:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     sort_order:
+ *                       type: integer
+ *                     active:
+ *                       type: boolean
  *       404:
  *         description: Categoría no encontrada
  */

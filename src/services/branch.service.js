@@ -96,4 +96,4 @@ export const assignManager = async (tenantId, branchId, managerId, actorId, ipAd
   return { branch_id: branch.branch_id, manager_id: managerId };
 };
 
-export default { listBranches, updateBranch, assignManager };
+export default { listBranches, getBranchById, updateBranch, assignManager };
