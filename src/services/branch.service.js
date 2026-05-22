@@ -1,5 +1,5 @@
 import AppError from '../utils/AppError.js';
-import { Branch, City, User } from '../models/index.js';
+import { Branch, City, User, Schedule } from '../models/index.js';
 import { logAction } from '../utils/auditLogger.js';
 
 export const listBranches = async (tenantId) => {
@@ -8,6 +8,7 @@ export const listBranches = async (tenantId) => {
     include: [
       { model: City, as: 'city', attributes: ['description'] },
       { model: User, as: 'manager', attributes: ['name', 'email'] },
+      { model: Schedule, as: 'schedules' },
     ],
     order: [['name', 'ASC']],
   });
@@ -19,6 +20,7 @@ export const getBranchById = async (tenantId, branchId) => {
     include: [
       { model: City, as: 'city', attributes: ['description'] },
       { model: User, as: 'manager', attributes: ['name', 'email'] },
+      { model: Schedule, as: 'schedules' },
     ],
   });
   if (!branch) throw new AppError('Sucursal no encontrada', 404);

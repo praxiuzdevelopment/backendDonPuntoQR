@@ -72,6 +72,9 @@ const router = Router();
  *                     slug:
  *                       type: string
  *                       example: "piqueteaderodonjuan"
+ *                     branch_id:
+ *                       type: integer
+ *                       example: 1
  *       401:
  *         description: Credenciales inválidas
  *       422:

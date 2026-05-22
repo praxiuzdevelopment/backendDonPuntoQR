@@ -1,7 +1,7 @@
 import AppError from '../utils/AppError.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User, Tenant, License, Role } from '../models/index.js';
+import { User, Tenant, License, Role, Branch } from '../models/index.js';
 
 export const generateToken = (user, role, tenantSlug = null) => {
   return jwt.sign(
@@ -53,6 +53,7 @@ export const login = async ({ email, password }) => {
   const role        = user.role;
   const token       = generateToken(user, role);
   const licenseData = await getLicenseData(user.tenant_id);
+  const branch      = user.tenant_id ? await Branch.findOne({ where: { tenant_id: user.tenant_id } }) : null;
 
   return {
     restaurant_name: user.tenant?.name || 'DonPunto Admin',
@@ -62,6 +63,7 @@ export const login = async ({ email, password }) => {
     license_days:    licenseData.days,
     license_end_date: licenseData.end_date,
     slug:            user.tenant?.slug || null,
+    branch_id:       branch?.branch_id || null,
   };
 };
 

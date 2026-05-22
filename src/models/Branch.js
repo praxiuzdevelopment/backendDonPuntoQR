@@ -26,6 +26,7 @@ export default (sequelize) => {
     Branch.belongsTo(models.Tenant, { foreignKey: 'tenant_id', as: 'tenant' });
     Branch.belongsTo(models.City,   { foreignKey: 'city_id',   as: 'city' });
     Branch.belongsTo(models.User,   { foreignKey: 'manager_id', as: 'manager' });
+    if (models.Schedule) Branch.hasMany(models.Schedule, { foreignKey: 'branch_id', as: 'schedules' });
   };
 
   return Branch;

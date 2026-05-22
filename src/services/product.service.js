@@ -227,4 +227,4 @@ export const bulkUpload = async (tenantId, file, actorId, ipAddress) => {
   return { message: `${insertedCount} productos importados correctamente.` };
 };
 
-export default { listProducts, createProduct, updateProduct, toggleStock, bulkUpload };
+export default { listProducts, getProductById, createProduct, updateProduct, toggleStock, bulkUpload };

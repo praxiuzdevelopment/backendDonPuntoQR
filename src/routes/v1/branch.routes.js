@@ -57,6 +57,19 @@ router.use(authenticate, requireRole('admin'));
  *                             type: string
  *                           email:
  *                             type: string
+ *                       schedules:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             dia_semana:
+ *                               type: integer
+ *                             open_hour:
+ *                               type: string
+ *                             close_hour:
+ *                               type: string
+ *                             closed:
+ *                               type: boolean
  */
 router.get('/', listBranches);
 
@@ -104,6 +117,19 @@ router.get('/', listBranches);
  *                       type: string
  *                     active:
  *                       type: boolean
+ *                     schedules:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           dia_semana:
+ *                             type: integer
+ *                           open_hour:
+ *                             type: string
+ *                           close_hour:
+ *                             type: string
+ *                           closed:
+ *                             type: boolean
  *       404:
  *         description: Sucursal no encontrada
  */
