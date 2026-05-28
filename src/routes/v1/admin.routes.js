@@ -84,12 +84,53 @@ router.post('/tenants', createTenant);
  * /api/v1/admin/tenants:
  *   get:
  *     summary: Listar todos los restaurantes
+ *     description: Obtiene la lista completa de todos los restaurantes registrados con su información de licencia y estado.
  *     tags: [Super Admin]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de tenants con su licencia
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       tenant_id:
+ *                         type: integer
+ *                       establishment_name:
+ *                         type: string
+ *                       slug:
+ *                         type: string
+ *                       active:
+ *                         type: boolean
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       license:
+ *                         type: object
+ *                         properties:
+ *                           plan:
+ *                             type: string
+ *                           days_left:
+ *                             type: integer
+ *                           end_date:
+ *                             type: string
+ *                             format: date-time
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado - se requiere rol super_admin
+ *       500:
+ *         description: Error interno del servidor
  */
 router.get('/tenants', listTenants);
 
@@ -98,6 +139,7 @@ router.get('/tenants', listTenants);
  * /api/v1/admin/tenants/{id}/status:
  *   patch:
  *     summary: Activar o suspender un restaurante
+ *     description: Activa o suspende un restaurante (tenant) en la plataforma. Al suspenderlo, los menús públicos de ese restaurante dejarán de estar accesibles.
  *     tags: [Super Admin]
  *     security:
  *       - bearerAuth: []
@@ -107,6 +149,8 @@ router.get('/tenants', listTenants);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID del tenant (restaurante)
+ *         example: 1
  *     requestBody:
  *       required: true
  *       content:
@@ -118,11 +162,35 @@ router.get('/tenants', listTenants);
  *               active:
  *                 type: boolean
  *                 example: false
+ *                 description: false para suspender, true para activar
  *     responses:
  *       200:
- *         description: Estado actualizado
+ *         description: Estado actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     tenant_id:
+ *                       type: integer
+ *                       example: 1
+ *                     active:
+ *                       type: boolean
+ *                       example: false
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado - se requiere rol super_admin
  *       404:
  *         description: Tenant no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.patch('/tenants/:id/status', setTenantStatus);
 
@@ -131,6 +199,7 @@ router.patch('/tenants/:id/status', setTenantStatus);
  * /api/v1/admin/tenants/{id}/license:
  *   post:
  *     summary: Renovar o asignar licencia
+ *     description: Renueva la licencia de un restaurante o asigna una nueva. Se acumulan los días si ya tiene una licencia activa.
  *     tags: [Super Admin]
  *     security:
  *       - bearerAuth: []
@@ -140,6 +209,8 @@ router.patch('/tenants/:id/status', setTenantStatus);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID del tenant (restaurante)
+ *         example: 1
  *     requestBody:
  *       required: true
  *       content:
@@ -151,14 +222,47 @@ router.patch('/tenants/:id/status', setTenantStatus);
  *                 type: string
  *                 enum: [free, basic, pro]
  *                 default: basic
+ *                 example: "pro"
+ *                 description: Plan de licencia (opcional, defecto basic)
  *               license_days:
  *                 type: integer
  *                 default: 30
+ *                 example: 60
+ *                 description: Días de licencia (opcional, defecto 30)
  *     responses:
  *       200:
- *         description: Licencia renovada
+ *         description: Licencia renovada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     tenant_id:
+ *                       type: integer
+ *                       example: 1
+ *                     plan:
+ *                       type: string
+ *                       example: "pro"
+ *                     start_date:
+ *                       type: string
+ *                       format: date-time
+ *                     end_date:
+ *                       type: string
+ *                       format: date-time
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado - se requiere rol super_admin
  *       404:
  *         description: Tenant no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.post('/tenants/:id/license', renewLicense);
 
