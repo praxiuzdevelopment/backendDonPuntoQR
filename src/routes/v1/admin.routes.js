@@ -1,16 +1,18 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
-import { requireRole } from '../../middlewares/requireRole.js';
+import { requireSuperAdmin } from '../../middlewares/requireSuperAdmin.js';
 import {
   createTenant,
   listTenants,
+  getTenantDetail,
+  updateTenant,
   setTenantStatus,
   renewLicense,
 } from '../../controllers/admin.controller.js';
 
 const router = Router();
 
-router.use(authenticate, requireRole('super_admin'));
+router.use(authenticate, requireSuperAdmin);
 
 /**
  * @swagger
@@ -136,6 +138,145 @@ router.get('/tenants', listTenants);
 
 /**
  * @swagger
+ * /api/v1/admin/tenants/{id}:
+ *   get:
+ *     summary: Ficha completa de un restaurante
+ *     description: |
+ *       Devuelve el detalle de un restaurante: licencia vigente con días restantes,
+ *       sucursales con su ciudad, usuarios con su rol y conteos de catálogo.
+ *     tags: [Super Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del tenant (restaurante)
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Detalle del restaurante
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     tenant_id:
+ *                       type: integer
+ *                     name:
+ *                       type: string
+ *                     slug:
+ *                       type: string
+ *                     logo_url:
+ *                       type: string
+ *                       nullable: true
+ *                     active:
+ *                       type: boolean
+ *                     license:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         plan:
+ *                           type: string
+ *                         status:
+ *                           type: string
+ *                         start_date:
+ *                           type: string
+ *                           format: date-time
+ *                         end_date:
+ *                           type: string
+ *                           format: date-time
+ *                         days_left:
+ *                           type: integer
+ *                     branches:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     stats:
+ *                       type: object
+ *                       properties:
+ *                         categories:
+ *                           type: integer
+ *                         products:
+ *                           type: integer
+ *                         menus:
+ *                           type: integer
+ *                         branches:
+ *                           type: integer
+ *                         users:
+ *                           type: integer
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado - ruta exclusiva del equipo DonPunto
+ *       404:
+ *         description: Tenant no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/tenants/:id', getTenantDetail);
+
+/**
+ * @swagger
+ * /api/v1/admin/tenants/{id}:
+ *   put:
+ *     summary: Actualizar datos del restaurante
+ *     description: |
+ *       Actualiza el nombre y/o logo del restaurante.
+ *       El `slug` no es modificable: ya está impreso en los códigos QR distribuidos.
+ *     tags: [Super Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Piqueteadero Don Juan"
+ *               logo_url:
+ *                 type: string
+ *                 nullable: true
+ *     responses:
+ *       200:
+ *         description: Restaurante actualizado
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ *       404:
+ *         description: Tenant no encontrado
+ *       422:
+ *         description: No se enviaron campos válidos
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.put('/tenants/:id', updateTenant);
+
+/**
+ * @swagger
  * /api/v1/admin/tenants/{id}/status:
  *   patch:
  *     summary: Activar o suspender un restaurante
@@ -199,7 +340,12 @@ router.patch('/tenants/:id/status', setTenantStatus);
  * /api/v1/admin/tenants/{id}/license:
  *   post:
  *     summary: Renovar o asignar licencia
- *     description: Renueva la licencia de un restaurante o asigna una nueva. Se acumulan los días si ya tiene una licencia activa.
+ *     description: |
+ *       Renueva la licencia de un restaurante o le asigna una nueva.
+ *
+ *       Los días **se acumulan**: si la licencia sigue vigente, los días nuevos
+ *       se suman al vencimiento actual, de modo que renovar por anticipado nunca
+ *       recorta tiempo de uso. Si ya venció, el conteo arranca en la fecha actual.
  *     tags: [Super Admin]
  *     security:
  *       - bearerAuth: []
@@ -252,15 +398,27 @@ router.patch('/tenants/:id/status', setTenantStatus);
  *                     start_date:
  *                       type: string
  *                       format: date-time
- *                     end_date:
+ *                     license_end_date:
  *                       type: string
  *                       format: date-time
+ *                       description: Nuevo vencimiento tras acumular los días
+ *                     days_left:
+ *                       type: integer
+ *                       example: 40
+ *                     days_added:
+ *                       type: integer
+ *                       example: 30
+ *                     accumulated:
+ *                       type: boolean
+ *                       description: true si se sumó sobre una licencia vigente
  *       401:
  *         description: No autorizado
  *       403:
- *         description: Acceso denegado - se requiere rol super_admin
+ *         description: Acceso denegado - ruta exclusiva del equipo DonPunto
  *       404:
  *         description: Tenant no encontrado
+ *       422:
+ *         description: license_days inválido
  *       500:
  *         description: Error interno del servidor
  */

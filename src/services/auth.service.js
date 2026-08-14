@@ -59,6 +59,8 @@ export const login = async ({ email, password }) => {
     restaurant_name: user.tenant?.name || 'DonPunto Admin',
     user:            user.name,
     role:            user.role_id,
+    role_name:       role.name,
+    is_super_admin:  user.tenant_id === null,
     token,
     license_days:    licenseData.days,
     license_end_date: licenseData.end_date,

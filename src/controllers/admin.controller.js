@@ -54,6 +54,36 @@ export const listTenants = async (req, res) => {
   }
 };
 
+export const getTenantDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tenant = await adminService.getTenantDetail(id);
+    return res.status(200).json({ success: true, data: tenant });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[admin.controller] getTenantDetail:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+export const updateTenant = async (req, res) => {
+  try {
+    const { id }              = req.params;
+    const { name, logo_url }  = req.body;
+
+    if (name === undefined && logo_url === undefined) {
+      return res.status(422).json({ success: false, message: 'No se enviaron campos para actualizar' });
+    }
+
+    const result = await adminService.updateTenant(id, { name, logo_url });
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[admin.controller] updateTenant:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
 export const setTenantStatus = async (req, res) => {
   try {
     const { id }    = req.params;
@@ -86,4 +116,11 @@ export const renewLicense = async (req, res) => {
   }
 };
 
-export default { createTenant, listTenants, setTenantStatus, renewLicense };
+export default {
+  createTenant,
+  listTenants,
+  getTenantDetail,
+  updateTenant,
+  setTenantStatus,
+  renewLicense,
+};
