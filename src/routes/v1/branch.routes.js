@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
+import { requireActiveService } from '../../middlewares/requireActiveService.js';
 import { listBranches, getBranch, updateBranch, assignManager } from '../../controllers/branch.controller.js';
 import { updateSchedules } from '../../controllers/schedule.controller.js';
 
 const router = Router();
 
-router.use(authenticate, requireRole('admin'));
+router.use(authenticate, requireActiveService, requireRole('admin'));
 
 /**
  * @swagger

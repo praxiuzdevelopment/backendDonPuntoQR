@@ -24,6 +24,16 @@ export default (sequelize) => {
     Menu.belongsTo(models.Tenant,   { foreignKey: 'tenant_id',   as: 'tenant' });
     Menu.belongsTo(models.Template, { foreignKey: 'template_id', as: 'template' });
     
+    // Acceso directo a las tablas puente: el renderizado necesita sus columnas
+    // propias (display_order, show_description, featured, available), que la
+    // asociación N:M sólo expone de forma incómoda.
+    if (models.MenuCategory) {
+      Menu.hasMany(models.MenuCategory, { foreignKey: 'menu_id', as: 'menu_categories' });
+    }
+    if (models.MenuProduct) {
+      Menu.hasMany(models.MenuProduct, { foreignKey: 'menu_id', as: 'menu_products' });
+    }
+
     // N:M Associations
     if (models.Category) {
       Menu.belongsToMany(models.Category, { 

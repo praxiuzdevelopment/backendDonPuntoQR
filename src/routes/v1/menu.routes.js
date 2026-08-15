@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
-import { listMenus, getMenuDetail, createMenu, updateMenuStructure } from '../../controllers/menu.controller.js';
+import { requireActiveService } from '../../middlewares/requireActiveService.js';
+import { listMenus, getMenuDetail, createMenu, updateMenuStructure, getMenuRender, updateMenu } from '../../controllers/menu.controller.js';
 
 const router = Router();
 
-router.use(authenticate, requireRole('admin'));
+router.use(authenticate, requireActiveService, requireRole('admin'));
 
 /**
  * @swagger
@@ -318,9 +319,11 @@ router.get('/', listMenus);
  *       500:
  *         description: Error interno del servidor
  */
+router.get('/:id/render', getMenuRender);
 router.get('/:id', getMenuDetail);
 router.post('/', createMenu);
 
 router.put('/:id/structure', updateMenuStructure);
+router.put('/:id', updateMenu);
 
 export default router;

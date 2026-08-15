@@ -2,6 +2,7 @@ import AppError from '../utils/AppError.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User, Tenant, License, Role, Branch } from '../models/index.js';
+import { evaluateService, SERVICE_BLOCK_CODES } from '../utils/license.js';
 
 export const generateToken = (user, role, tenantSlug = null) => {
   return jwt.sign(
@@ -36,7 +37,7 @@ export const login = async ({ email, password }) => {
   const user = await User.scope('withPassword').findOne({
     where: { email: email.toLowerCase().trim(), active: true },
     include: [
-      { model: Tenant, as: 'tenant', attributes: ['name', 'slug'] },
+      { model: Tenant, as: 'tenant', attributes: ['name', 'slug', 'active'] },
       { model: Role,   as: 'role',   attributes: ['name'] },
     ],
   });
@@ -48,6 +49,29 @@ export const login = async ({ email, password }) => {
   const passwordMatch = await bcrypt.compare(password, user.password_hash);
   if (!passwordMatch) {
     throw new AppError('Credenciales inválidas', 401);
+  }
+
+  // El staff de DonPunto no tiene tenant ni licencia, así que nunca se bloquea.
+  if (user.tenant_id) {
+    const license = await License.findOne({ where: { tenant_id: user.tenant_id } });
+    const service = evaluateService(user.tenant, license);
+
+    if (service.blocked) {
+      throw new AppError(
+        service.code === SERVICE_BLOCK_CODES.TENANT_SUSPENDED
+          ? 'La cuenta de este restaurante está suspendida'
+          : 'El servicio está inactivo por falta de pago',
+        403,
+        {
+          code: service.code,
+          details: {
+            restaurant_name: user.tenant?.name || null,
+            end_date:        service.end_date,
+            days_overdue:    service.days_overdue,
+          },
+        }
+      );
+    }
   }
 
   const role        = user.role;

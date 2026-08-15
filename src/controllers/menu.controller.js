@@ -32,7 +32,7 @@ export const createMenu = async (req, res) => {
     const result = await menuService.createMenu(
       req.user.tenant_id,
       req.body,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(201).json({ success: true, data: result });
@@ -55,7 +55,7 @@ export const updateMenuStructure = async (req, res) => {
       req.user.tenant_id,
       id,
       sections,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, ...result });
@@ -66,4 +66,28 @@ export const updateMenuStructure = async (req, res) => {
   }
 };
 
-export default { listMenus, getMenuDetail, createMenu, updateMenuStructure };
+
+export const getMenuRender = async (req, res) => {
+  try {
+    const data = await menuService.getMenuForRender(req.user.tenant_id, req.params.id);
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[menu.controller] getMenuRender:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+
+export const updateMenu = async (req, res) => {
+  try {
+    const data = await menuService.updateMenu(req.user.tenant_id, req.params.id, req.body, req.user.user_id, req.ip);
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[menu.controller] updateMenu:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+export default { listMenus, getMenuDetail, createMenu, updateMenuStructure, getMenuRender, updateMenu };

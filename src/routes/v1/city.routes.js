@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
-import { requireRole } from '../../middlewares/requireRole.js';
-import { listCities, getCity, createCity, updateCity } from '../../controllers/city.controller.js';
+import { optionalAuthenticate } from '../../middlewares/optionalAuth.js';
+import { requireSuperAdmin } from '../../middlewares/requireSuperAdmin.js';
+import {
+  listCities,
+  getCity,
+  createCity,
+  updateCity,
+  toggleCityStatus,
+} from '../../controllers/city.controller.js';
 
 const router = Router();
 
@@ -55,7 +62,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/', listCities);
+router.get('/', optionalAuthenticate, listCities);
 
 /**
  * @swagger
@@ -206,7 +213,7 @@ router.get('/:id', getCity);
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/', authenticate, requireRole('admin'), createCity);
+router.post('/', authenticate, requireSuperAdmin, createCity);
 
 /**
  * @swagger
@@ -312,6 +319,46 @@ router.post('/', authenticate, requireRole('admin'), createCity);
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/:id', authenticate, requireRole('admin'), updateCity);
+router.put('/:id', authenticate, requireSuperAdmin, updateCity);
+
+/**
+ * @swagger
+ * /api/v1/cities/{id}/toggle:
+ *   patch:
+ *     summary: Activar o deshabilitar una ciudad
+ *     description: |
+ *       Las ciudades no se eliminan porque `branch.city_id` las referencia.
+ *       Al deshabilitarlas dejan de ofrecerse al asignar sucursales, pero las
+ *       que ya la tenían conservan su dato.
+ *     tags: [Cities]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [active]
+ *             properties:
+ *               active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Estado actualizado
+ *       403:
+ *         description: Ruta exclusiva del equipo DonPunto
+ *       404:
+ *         description: Ciudad no encontrada
+ *       422:
+ *         description: El campo active debe ser boolean
+ */
+router.patch('/:id/toggle', authenticate, requireSuperAdmin, toggleCityStatus);
 
 export default router;

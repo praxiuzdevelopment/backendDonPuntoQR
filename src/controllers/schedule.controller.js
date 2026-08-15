@@ -13,7 +13,7 @@ export const updateSchedules = async (req, res) => {
       req.user.tenant_id,
       branchId,
       schedules,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });

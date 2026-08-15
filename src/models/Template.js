@@ -7,6 +7,8 @@ export default (sequelize) => {
     description:   { type: DataTypes.STRING(255), allowNull: true },
     preview_image: { type: DataTypes.STRING(500), allowNull: true },
     code_name:     { type: DataTypes.STRING(100), allowNull: false, unique: true },
+    layout:        { type: DataTypes.JSONB, allowNull: false, defaultValue: {},
+                     comment: 'Bloques, orden y opciones que componen la plantilla' },
     active:        { type: DataTypes.BOOLEAN, defaultValue: true },
   }, {
     tableName:   'template',

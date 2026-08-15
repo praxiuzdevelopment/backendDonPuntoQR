@@ -171,4 +171,75 @@ export const updateMenuStructure = async (tenantId, menuId, sections, actorId, i
   }
 };
 
-export default { listMenus, getMenuDetail, createMenu, updateMenuStructure };
+
+/**
+ * Menú en el formato de renderizado (mismo contrato que la vista pública).
+ * Alimenta la previsualización del panel sin necesidad de un QR.
+ */
+export const getMenuForRender = async (tenantId, menuId) => {
+  const { Tenant, Branch } = await import('../models/index.js');
+  const { presentMenu, menuRenderInclude, branchRenderInclude } = await import('./menuPresenter.js');
+
+  const menu = await Menu.findOne({
+    where: { menu_id: menuId, tenant_id: tenantId },
+    include: menuRenderInclude,
+  });
+  if (!menu) throw new AppError('Menú no encontrado', 404);
+
+  const tenant = await Tenant.findByPk(tenantId);
+  const branch = await Branch.findOne({
+    where: { tenant_id: tenantId, active: true },
+    include: branchRenderInclude,
+    order: [['branch_id', 'ASC']],
+  });
+
+  return presentMenu({ menu, tenant, branch });
+};
+
+
+
+/**
+ * Actualiza los datos propios del menú (no su estructura).
+ * La estructura -categorias y productos- va por updateMenuStructure.
+ */
+export const updateMenu = async (tenantId, menuId, payload, actorId, ipAddress) => {
+  const menu = await Menu.findOne({ where: { menu_id: menuId, tenant_id: tenantId } });
+  if (!menu) throw new AppError('Menú no encontrado', 404);
+
+  const allowed = [
+    'name', 'template_id', 'primary_color', 'secondary_color',
+    'image_position', 'order_criteria', 'temporal', 'start_date', 'end_date', 'active',
+  ];
+  const changes = {};
+  for (const key of allowed) {
+    if (payload[key] !== undefined) changes[key] = payload[key];
+  }
+
+  if (changes.name !== undefined && !String(changes.name).trim()) {
+    throw new AppError('El nombre del menú es requerido', 422);
+  }
+  if (changes.temporal && (!changes.start_date || !changes.end_date)) {
+    throw new AppError('Un menú de temporada necesita fecha de inicio y de fin', 422);
+  }
+  if (changes.start_date && changes.end_date && new Date(changes.end_date) < new Date(changes.start_date)) {
+    throw new AppError('La fecha de fin no puede ser anterior a la de inicio', 422);
+  }
+
+  const oldValues = { name: menu.name, template_id: menu.template_id, active: menu.active };
+  await menu.update(changes);
+
+  await logAction({
+    tenant_id: tenantId,
+    user_id: actorId,
+    table_name: 'menu',
+    record_id: menu.menu_id,
+    action: 'UPDATE',
+    old_values: oldValues,
+    new_values: changes,
+    ip_address: ipAddress,
+  });
+
+  return menu;
+};
+
+export default { listMenus, getMenuDetail, createMenu, updateMenu, updateMenuStructure, getMenuForRender };

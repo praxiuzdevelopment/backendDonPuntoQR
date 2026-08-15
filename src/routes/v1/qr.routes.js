@@ -2,11 +2,13 @@ import { Router } from 'express';
 import { generateQRCode, listQRCodes } from '../../controllers/qr.controller.js';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
+import { requireActiveService } from '../../middlewares/requireActiveService.js';
 
 const router = Router();
 
 // Todas las rutas de QR requieren autenticación y rol de admin/manager
 router.use(authenticate);
+router.use(requireActiveService);
 router.use(requireRole(['admin', 'manager']));
 
 /**

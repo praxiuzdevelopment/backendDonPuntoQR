@@ -37,7 +37,7 @@ export const createCategory = async (req, res) => {
     const result = await categoryService.createCategory(
       req.user.tenant_id,
       { name, description, active },
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(201).json({ success: true, data: result });
@@ -56,7 +56,7 @@ export const updateCategory = async (req, res) => {
       req.user.tenant_id,
       id,
       { name, description },
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });
@@ -80,7 +80,7 @@ export const toggleCategoryStatus = async (req, res) => {
       req.user.tenant_id,
       id,
       active,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });

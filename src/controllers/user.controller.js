@@ -37,7 +37,7 @@ export const createUser = async (req, res) => {
     const result = await userService.createUser(
       req.user.tenant_id,
       { name, last_name, email, phone, password, role_id, active },
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(201).json({ success: true, data: result });
@@ -57,7 +57,7 @@ export const updateUser = async (req, res) => {
       req.user.tenant_id,
       id,
       { name, last_name, email, phone, role_id, active },
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });
@@ -81,7 +81,7 @@ export const toggleUserStatus = async (req, res) => {
       req.user.tenant_id,
       id,
       active,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });

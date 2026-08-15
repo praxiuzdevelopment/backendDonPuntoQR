@@ -17,7 +17,13 @@ export const login = async (req, res) => {
     return res.status(200).json({ success: true, data: result });
   } catch (error) {
     if (error.status) {
-      return res.status(error.status).json({ success: false, message: error.message });
+      return res.status(error.status).json({
+        success: false,
+        message: error.message,
+        // El cliente decide qué mostrar según el código, no según el texto.
+        ...(error.code && { code: error.code }),
+        ...(error.details && { details: error.details }),
+      });
     }
     console.error('[auth.controller] login error:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });

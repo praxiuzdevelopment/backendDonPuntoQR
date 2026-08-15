@@ -33,7 +33,7 @@ export const createProduct = async (req, res) => {
       req.user.tenant_id,
       req.body,
       req.file,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(201).json({ success: true, data: result });
@@ -52,7 +52,7 @@ export const updateProduct = async (req, res) => {
       id,
       req.body,
       req.file,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });
@@ -76,7 +76,7 @@ export const toggleStock = async (req, res) => {
       req.user.tenant_id,
       id,
       req.body,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });
@@ -96,7 +96,7 @@ export const bulkUpload = async (req, res) => {
     const result = await productService.bulkUpload(
       req.user.tenant_id,
       req.file,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });

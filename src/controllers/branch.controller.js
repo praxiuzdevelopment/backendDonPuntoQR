@@ -36,7 +36,7 @@ export const updateBranch = async (req, res) => {
       req.user.tenant_id,
       id,
       data,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });
@@ -56,7 +56,7 @@ export const assignManager = async (req, res) => {
       req.user.tenant_id,
       id,
       manager_id,
-      req.user.id,
+      req.user.user_id,
       req.ip
     );
     return res.status(200).json({ success: true, data: result });
