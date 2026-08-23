@@ -10,6 +10,8 @@ export default (sequelize) => {
     secondary_color: { type: DataTypes.STRING(50), defaultValue: '#FFFFFF' },
     image_position:  { type: DataTypes.STRING(50), defaultValue: 'left' },
     order_criteria:  { type: DataTypes.STRING(50), defaultValue: 'custom' },
+    is_default:      { type: DataTypes.BOOLEAN, defaultValue: false,
+                       comment: 'Carta de siempre del restaurante' },
     temporal:        { type: DataTypes.BOOLEAN, defaultValue: false },
     start_date:      { type: DataTypes.DATE, allowNull: true },
     end_date:        { type: DataTypes.DATE, allowNull: true },

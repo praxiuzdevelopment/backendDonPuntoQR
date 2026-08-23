@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
 import { requireActiveService } from '../../middlewares/requireActiveService.js';
-import { listMenus, getMenuDetail, createMenu, updateMenuStructure, getMenuRender, updateMenu } from '../../controllers/menu.controller.js';
+import { listMenus, getMenuDetail, createMenu, updateMenuStructure, getMenuRender, updateMenu, setDefaultMenu } from '../../controllers/menu.controller.js';
 
 const router = Router();
 
@@ -325,5 +325,32 @@ router.post('/', createMenu);
 
 router.put('/:id/structure', updateMenuStructure);
 router.put('/:id', updateMenu);
+
+/**
+ * @swagger
+ * /api/v1/menus/{id}/default:
+ *   patch:
+ *     summary: Designar el menú principal
+ *     description: |
+ *       El menú principal es la carta a la que vuelven los códigos QR
+ *       automáticos cuando ninguna temporada está vigente. Sólo puede haber uno.
+ *     tags: [Menus]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Menú principal actualizado
+ *       404:
+ *         description: Menú no encontrado
+ *       422:
+ *         description: Un menú de temporada o inactivo no puede ser principal
+ */
+router.patch('/:id/default', setDefaultMenu);
 
 export default router;

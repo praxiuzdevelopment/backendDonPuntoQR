@@ -21,6 +21,10 @@ export default function defineQRCode(sequelize) {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      follows_active_menu: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
       code: {
         type: DataTypes.STRING(50),
         allowNull: false,

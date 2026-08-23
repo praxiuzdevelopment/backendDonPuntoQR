@@ -1,15 +1,16 @@
 import { Router } from 'express';
-import { generateQRCode, listQRCodes } from '../../controllers/qr.controller.js';
+import { generateQRCode, listQRCodes, getMenuQRCode, toggleQRCodeStatus, setQRCodeMode, deleteQRCode } from '../../controllers/qr.controller.js';
 import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
 import { requireActiveService } from '../../middlewares/requireActiveService.js';
 
 const router = Router();
 
-// Todas las rutas de QR requieren autenticación y rol de admin/manager
+// `requireRole` compara contra una jerarquía y espera un único rol: pasarle un
+// array daba `undefined` y devolvía 403 en todas las rutas de QR.
 router.use(authenticate);
 router.use(requireActiveService);
-router.use(requireRole(['admin', 'manager']));
+router.use(requireRole('admin'));
 
 /**
  * @swagger
@@ -138,5 +139,90 @@ router.post('/generate', generateQRCode);
  *         description: Error interno del servidor
  */
 router.get('/', listQRCodes);
+
+/**
+ * @swagger
+ * /api/v1/qr/menu/{menuId}:
+ *   get:
+ *     summary: Código QR de un menú
+ *     description: Devuelve el QR asociado al menú con su imagen redibujada. 404 si aún no tiene.
+ *     tags: [QR Codes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: menuId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Código QR encontrado
+ *       404:
+ *         description: El menú no tiene código QR
+ */
+router.get('/menu/:menuId', getMenuQRCode);
+
+/**
+ * @swagger
+ * /api/v1/qr/{id}/toggle:
+ *   patch:
+ *     summary: Habilitar o inhabilitar un código QR
+ *     description: Un QR inhabilitado deja de servir el menú, pero el código se conserva y puede reactivarse.
+ *     tags: [QR Codes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [active]
+ *             properties:
+ *               active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Estado actualizado
+ *       404:
+ *         description: Código QR no encontrado
+ *       422:
+ *         description: El campo active debe ser boolean
+ */
+router.patch('/:id/toggle', toggleQRCodeStatus);
+
+/**
+ * @swagger
+ * /api/v1/qr/{id}:
+ *   delete:
+ *     summary: Eliminar un código QR
+ *     description: |
+ *       Borra el código de forma definitiva. Cualquier QR ya impreso con ese
+ *       código queda inservible: para retirarlo temporalmente usa el toggle.
+ *     tags: [QR Codes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Código QR eliminado
+ *       404:
+ *         description: Código QR no encontrado
+ */
+router.patch('/:id/mode', setQRCodeMode);
+
+router.delete('/:id', deleteQRCode);
 
 export default router;

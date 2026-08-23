@@ -6,6 +6,7 @@ import {
   menuRenderInclude,
   branchRenderInclude,
 } from '../services/menuPresenter.js';
+import { resolveMenuForQR } from '../services/menuResolver.js';
 
 /**
  * Menú público de un código QR.
@@ -36,13 +37,16 @@ export const getMenuByQRCode = catchAsync(async (req, res) => {
     order: [['branch_id', 'ASC']],
   });
 
-  const where = { tenant_id: tenant.tenant_id, active: true };
-  if (qr.menu_id) where.menu_id = qr.menu_id;
+  // Qué menú toca ahora lo decide el resolvedor, no una consulta ad hoc.
+  const { menu: resolved } = await resolveMenuForQR(qr, tenant.tenant_id, branch);
+  if (!resolved) {
+    throw new AppError('No hay menús activos disponibles para este código', 404);
+  }
 
+  // Se recarga con las relaciones que necesita el renderizado.
   const menu = await Menu.findOne({
-    where,
+    where: { menu_id: resolved.menu_id },
     include: menuRenderInclude,
-    order: [['created_at', 'DESC']],
   });
 
   if (!menu) {

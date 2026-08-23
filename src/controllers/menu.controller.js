@@ -35,7 +35,9 @@ export const createMenu = async (req, res) => {
       req.user.user_id,
       req.ip
     );
-    return res.status(201).json({ success: true, data: result });
+    // El menú va plano y los avisos aparte: el cliente sigue leyendo menu_id
+    // en la raíz y muestra las advertencias si las hay.
+    return res.status(201).json({ success: true, data: result.menu, warnings: result.warnings });
   } catch (error) {
     console.error('[menu.controller] createMenu:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
@@ -81,8 +83,8 @@ export const getMenuRender = async (req, res) => {
 
 export const updateMenu = async (req, res) => {
   try {
-    const data = await menuService.updateMenu(req.user.tenant_id, req.params.id, req.body, req.user.user_id, req.ip);
-    return res.status(200).json({ success: true, data });
+    const result = await menuService.updateMenu(req.user.tenant_id, req.params.id, req.body, req.user.user_id, req.ip);
+    return res.status(200).json({ success: true, data: result.menu, warnings: result.warnings });
   } catch (error) {
     if (error.status) return res.status(error.status).json({ success: false, message: error.message });
     console.error('[menu.controller] updateMenu:', error);
@@ -90,4 +92,15 @@ export const updateMenu = async (req, res) => {
   }
 };
 
-export default { listMenus, getMenuDetail, createMenu, updateMenuStructure, getMenuRender, updateMenu };
+export const setDefaultMenu = async (req, res) => {
+  try {
+    const data = await menuService.setDefaultMenu(req.user.tenant_id, req.params.id, req.user.user_id, req.ip);
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[menu.controller] setDefaultMenu:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+export default { listMenus, getMenuDetail, createMenu, updateMenuStructure, getMenuRender, updateMenu, setDefaultMenu };

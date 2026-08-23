@@ -15,6 +15,8 @@ export default (sequelize) => {
     facebook_url:    { type: DataTypes.STRING(255), allowNull: true },
     tiktok_url:      { type: DataTypes.STRING(255), allowNull: true },
     manager_id:      { type: DataTypes.INTEGER, allowNull: true },
+    main_menu_id:    { type: DataTypes.INTEGER, allowNull: true,
+                       comment: 'Sobrescribe el menú principal del restaurante' },
     active:          { type: DataTypes.BOOLEAN, defaultValue: true },
   }, {
     tableName:   'branch',
