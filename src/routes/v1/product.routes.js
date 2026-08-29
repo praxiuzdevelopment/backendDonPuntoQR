@@ -3,7 +3,7 @@ import { authenticate } from '../../middlewares/auth.js';
 import { requireRole } from '../../middlewares/requireRole.js';
 import { requireActiveService } from '../../middlewares/requireActiveService.js';
 import { upload } from '../../middlewares/upload.js';
-import { listProducts, getProduct, createProduct, updateProduct, toggleStock, bulkUpload } from '../../controllers/product.controller.js';
+import { listProducts, getProduct, createProduct, updateProduct, toggleProductStatus, toggleStock, bulkUpload } from '../../controllers/product.controller.js';
 
 const router = Router();
 
@@ -311,6 +311,50 @@ router.post('/', upload.single('image'), createProduct);
  *         description: Error interno del servidor
  */
 router.put('/:id', upload.single('image'), updateProduct);
+
+/**
+ * @swagger
+ * /api/v1/products/{id}/toggle:
+ *   patch:
+ *     summary: Activar o inhabilitar un producto
+ *     description: Marca un producto como activo o inactivo (equivalente a eliminarlo del menú sin borrar sus datos).
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del producto
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [active]
+ *             properties:
+ *               active:
+ *                 type: boolean
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Estado actualizado exitosamente
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ *       404:
+ *         description: Producto no encontrado
+ *       422:
+ *         description: El campo active debe ser boolean
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.patch('/:id/toggle', toggleProductStatus);
 
 /**
  * @swagger

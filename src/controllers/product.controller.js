@@ -63,6 +63,30 @@ export const updateProduct = async (req, res) => {
   }
 };
 
+export const toggleProductStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { active } = req.body;
+
+    if (typeof active !== 'boolean') {
+      return res.status(422).json({ success: false, message: 'El campo active debe ser boolean' });
+    }
+
+    const result = await productService.toggleProductStatus(
+      req.user.tenant_id,
+      id,
+      active,
+      req.user.user_id,
+      req.ip
+    );
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    console.error('[product.controller] toggleProductStatus:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
 export const toggleStock = async (req, res) => {
   try {
     const { id } = req.params;
@@ -107,4 +131,4 @@ export const bulkUpload = async (req, res) => {
   }
 };
 
-export default { listProducts, createProduct, updateProduct, toggleStock, bulkUpload };
+export default { listProducts, createProduct, updateProduct, toggleProductStatus, toggleStock, bulkUpload };

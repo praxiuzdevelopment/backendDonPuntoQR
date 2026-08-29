@@ -128,6 +128,27 @@ export const updateProduct = async (tenantId, productId, data, file, actorId, ip
   return product;
 };
 
+export const toggleProductStatus = async (tenantId, productId, active, actorId, ipAddress) => {
+  const product = await Product.findOne({ where: { product_id: productId, tenant_id: tenantId } });
+  if (!product) throw new AppError('Producto no encontrado', 404);
+
+  const oldValues = { active: product.active };
+  await product.update({ active });
+
+  await logAction({
+    tenant_id: tenantId,
+    user_id: actorId,
+    table_name: 'product',
+    record_id: product.product_id,
+    action: 'UPDATE',
+    old_values: oldValues,
+    new_values: { active },
+    ip_address: ipAddress,
+  });
+
+  return { product_id: product.product_id, active };
+};
+
 export const toggleStock = async (tenantId, productId, data, actorId, ipAddress) => {
   const product = await Product.findOne({ where: { product_id: productId, tenant_id: tenantId } });
   if (!product) throw new AppError('Producto no encontrado', 404);
@@ -227,4 +248,4 @@ export const bulkUpload = async (tenantId, file, actorId, ipAddress) => {
   return { message: `${insertedCount} productos importados correctamente.` };
 };
 
-export default { listProducts, getProductById, createProduct, updateProduct, toggleStock, bulkUpload };
+export default { listProducts, getProductById, createProduct, updateProduct, toggleProductStatus, toggleStock, bulkUpload };
