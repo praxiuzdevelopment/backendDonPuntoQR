@@ -2,6 +2,7 @@ import AppError from '../utils/AppError.js';
 import { sequelize, Menu, MenuCategory, MenuProduct, Category, Product, Template } from '../models/index.js';
 import { logAction } from '../utils/auditLogger.js';
 import { findOverlappingMenus, findActiveSeasonalMenus } from './menuResolver.js';
+import { assertBranchInTenant } from '../utils/branchScope.js';
 
 /**
  * Menús del restaurante, marcando cuál se está sirviendo ahora mismo.
@@ -17,7 +18,10 @@ export const listMenus = async (tenantId) => {
       include: [{ model: Template, as: 'template', attributes: ['name', 'preview_image'] }],
       order: [['created_at', 'DESC']],
     }),
-    findActiveSeasonalMenus(tenantId),
+    // La gestión resume el restaurante entero, así que aquí sí cuentan las
+    // temporadas de cualquier sede: al restaurante le interesa ver que una está
+    // vigente aunque sólo afecte a una sucursal.
+    findActiveSeasonalMenus(tenantId, { anyBranch: true }),
   ]);
 
   // La temporada vigente manda sobre el principal; si no hay, manda el principal.
@@ -49,6 +53,12 @@ export const setDefaultMenu = async (tenantId, menuId, actorId, ipAddress) => {
   }
   if (!menu.active) {
     throw new AppError('Un menú inactivo no puede ser el principal', 422);
+  }
+  if (menu.branch_id !== null) {
+    throw new AppError(
+      'Un menú de una sola sede no puede ser el principal del restaurante: las demás sedes se quedarían sin carta a la que volver',
+      422
+    );
   }
 
   await sequelize.transaction(async (transaction) => {
@@ -144,7 +154,7 @@ export const getMenuDetail = async (tenantId, menuId) => {
 };
 
 export const createMenu = async (tenantId, data, actorId, ipAddress) => {
-  const { name, template_id, primary_color, secondary_color, order_criteria, temporal, start_date, end_date } = data;
+  const { name, template_id, primary_color, secondary_color, order_criteria, temporal, start_date, end_date, branch_id } = data;
 
   if (temporal && (!start_date || !end_date)) {
     throw new AppError('Un menú de temporada necesita fecha de inicio y de fin', 422);
@@ -153,13 +163,19 @@ export const createMenu = async (tenantId, data, actorId, ipAddress) => {
     throw new AppError('La fecha de fin no puede ser anterior a la de inicio', 422);
   }
 
+  // Un menú puede acotarse a una sede. Se valida que sea del restaurante antes
+  // de guardarla: el id llega del cliente.
+  const branch = await assertBranchInTenant(tenantId, branch_id);
+
   // El primer menú del restaurante es su principal: así un restaurante de una
-  // sola sede no tiene que configurar nada para que sus QR funcionen.
+  // sola sede no tiene que configurar nada para que sus QR funcionen. Sólo
+  // cuenta como principal si vale para todas las sedes.
   const existing = await Menu.count({ where: { tenant_id: tenantId } });
-  const isDefault = existing === 0;
+  const isDefault = existing === 0 && branch === null;
 
   const menu = await Menu.create({
     tenant_id: tenantId,
+    branch_id: branch?.branch_id ?? null,
     template_id,
     name,
     primary_color,
@@ -178,7 +194,7 @@ export const createMenu = async (tenantId, data, actorId, ipAddress) => {
     table_name: 'menu',
     record_id: menu.menu_id,
     action: 'INSERT',
-    new_values: { name, template_id },
+    new_values: { name, template_id, branch_id: menu.branch_id },
     ip_address: ipAddress,
   });
 
@@ -198,6 +214,7 @@ export const buildScheduleWarnings = async (tenantId, menu) => {
   const overlapping = await findOverlappingMenus(tenantId, {
     start_date: menu.start_date,
     end_date: menu.end_date,
+    branch_id: menu.branch_id ?? null,
     excludeMenuId: menu.menu_id,
   });
 
@@ -320,10 +337,23 @@ export const updateMenu = async (tenantId, menuId, payload, actorId, ipAddress) 
   const allowed = [
     'name', 'template_id', 'primary_color', 'secondary_color',
     'image_position', 'order_criteria', 'temporal', 'start_date', 'end_date', 'active',
+    'branch_id',
   ];
   const changes = {};
   for (const key of allowed) {
     if (payload[key] !== undefined) changes[key] = payload[key];
+  }
+
+  if (changes.branch_id !== undefined) {
+    const branch = await assertBranchInTenant(tenantId, changes.branch_id);
+    changes.branch_id = branch?.branch_id ?? null;
+
+    // El principal es la carta a la que vuelve todo el restaurante cuando no
+    // hay temporada vigente: si se acotara a una sede, las demás se quedarían
+    // sin carta a la que volver.
+    if (changes.branch_id !== null && menu.is_default) {
+      throw new AppError('El menú principal del restaurante no puede acotarse a una sede', 422);
+    }
   }
 
   if (changes.name !== undefined && !String(changes.name).trim()) {

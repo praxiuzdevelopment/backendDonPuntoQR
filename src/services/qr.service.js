@@ -2,6 +2,7 @@ import QRCodeLibrary from 'qrcode';
 import crypto from 'crypto';
 import AppError from '../utils/AppError.js';
 import { QRCode, Menu, Tenant } from '../models/index.js';
+import { assertBranchInTenant } from '../utils/branchScope.js';
 
 /**
  * Genera un string único para el QR
@@ -13,6 +14,11 @@ const generateUniqueCode = () => {
 export const generateQRCode = async ({ tenantId, menuId, branchId = null, tableNumber = null, color = '#000000' }) => {
   const tenant = await Tenant.findByPk(tenantId);
   if (!tenant) throw new AppError('Tenant no encontrado', 404);
+
+  // La sede llega del cliente y acaba decidiendo qué dirección, teléfonos y
+  // horarios muestra la carta pública: si no se comprueba de quién es, un
+  // restaurante puede apuntar su código a la sede de otro.
+  const branch = await assertBranchInTenant(tenantId, branchId);
 
   // Un menú, un código. Se comprueba aquí para dar un mensaje claro en vez de
   // dejar que reviente el índice único de la base de datos.
@@ -48,7 +54,7 @@ export const generateQRCode = async ({ tenantId, menuId, branchId = null, tableN
   const qrRecord = await QRCode.create({
     tenant_id: tenantId,
     menu_id: menuId || null,
-    branch_id: branchId || null,
+    branch_id: branch?.branch_id ?? null,
     code,
     qr_type: qrType,
     table_number: tableNumber,

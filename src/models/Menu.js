@@ -4,6 +4,8 @@ export default (sequelize) => {
   const Menu = sequelize.define('Menu', {
     menu_id:         { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     tenant_id:       { type: DataTypes.INTEGER, allowNull: false },
+    branch_id:       { type: DataTypes.INTEGER, allowNull: true,
+                       comment: 'Sede a la que pertenece el menú. Null = todas las sedes' },
     template_id:     { type: DataTypes.INTEGER, allowNull: false },
     name:            { type: DataTypes.STRING(150), allowNull: false },
     primary_color:   { type: DataTypes.STRING(50), defaultValue: '#FF4500' },
@@ -25,6 +27,7 @@ export default (sequelize) => {
   Menu.associate = (models) => {
     Menu.belongsTo(models.Tenant,   { foreignKey: 'tenant_id',   as: 'tenant' });
     Menu.belongsTo(models.Template, { foreignKey: 'template_id', as: 'template' });
+    if (models.Branch) Menu.belongsTo(models.Branch, { foreignKey: 'branch_id', as: 'branch' });
     
     // Acceso directo a las tablas puente: el renderizado necesita sus columnas
     // propias (display_order, show_description, featured, available), que la

@@ -1,6 +1,7 @@
-import { QRCode, Menu, Tenant, Branch } from '../models/index.js';
+import { QRCode, Menu, Tenant, Branch, License } from '../models/index.js';
 import AppError from '../utils/AppError.js';
 import catchAsync from '../utils/catchAsync.js';
+import { evaluateService } from '../utils/license.js';
 import {
   presentMenu,
   menuRenderInclude,
@@ -27,15 +28,37 @@ export const getMenuByQRCode = catchAsync(async (req, res) => {
     throw new AppError('El restaurante no se encuentra disponible', 404);
   }
 
-  // El QR sabe de qué sede es; si no lo dice, caemos a la sede principal para
-  // que los datos de contacto nunca queden vacíos.
-  const branch = await Branch.findOne({
-    where: qr.branch_id
-      ? { branch_id: qr.branch_id }
-      : { tenant_id: tenant.tenant_id, active: true },
-    include: branchRenderInclude,
-    order: [['branch_id', 'ASC']],
-  });
+  // La carta es el producto que se paga: si el servicio está cortado, deja de
+  // servirse. Sin esto el corte sólo alcanzaba al panel y el restaurante seguía
+  // teniendo lo que compró después de dejar de pagarlo.
+  //
+  // Se responde igual que con un restaurante inactivo, a propósito: al comensal
+  // no le corresponde enterarse de que hay una factura pendiente.
+  const license = await License.findOne({ where: { tenant_id: tenant.tenant_id } });
+  if (evaluateService(tenant, license).blocked) {
+    throw new AppError('El restaurante no se encuentra disponible', 404);
+  }
+
+  // La sede principal del restaurante: el respaldo cuando el código no dice de
+  // cuál es, para que los datos de contacto nunca queden vacíos.
+  const mainBranch = () =>
+    Branch.findOne({
+      where: { tenant_id: tenant.tenant_id, active: true },
+      include: branchRenderInclude,
+      order: [['branch_id', 'ASC']],
+    });
+
+  // El filtro por restaurante no es redundante: sin él, un código que apuntara a
+  // la sede de otro tenant servía la dirección y los teléfonos de ese tercero.
+  // Los códigos que ya quedaran así en base de datos no encuentran nada aquí, y
+  // por eso caen al respaldo en vez de quedarse sin sede.
+  const branch =
+    (qr.branch_id
+      ? await Branch.findOne({
+          where: { branch_id: qr.branch_id, tenant_id: tenant.tenant_id, active: true },
+          include: branchRenderInclude,
+        })
+      : null) ?? (await mainBranch());
 
   // Qué menú toca ahora lo decide el resolvedor, no una consulta ad hoc.
   const { menu: resolved } = await resolveMenuForQR(qr, tenant.tenant_id, branch);

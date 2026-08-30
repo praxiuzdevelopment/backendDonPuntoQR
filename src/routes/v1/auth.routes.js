@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { login, register } from '../../controllers/auth.controller.js';
+import { loginLimiter, registerLimiter } from '../../middlewares/rateLimit.js';
 
 const router = Router();
 
@@ -115,7 +116,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/login', login);
+router.post('/login', loginLimiter, login);
 
 /**
  * @swagger
@@ -220,6 +221,6 @@ router.post('/login', login);
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/register', register);
+router.post('/register', registerLimiter, register);
 
 export default router;

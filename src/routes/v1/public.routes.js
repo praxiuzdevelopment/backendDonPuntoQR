@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getMenuByQRCode } from '../../controllers/public.controller.js';
+import { publicMenuLimiter } from '../../middlewares/rateLimit.js';
 
 const router = Router();
 
@@ -24,6 +25,6 @@ const router = Router();
  *         description: Código inválido o restaurante inactivo
  */
 // Rutas 100% públicas para el comensal. No requieren autenticación JWT.
-router.get('/menus/:code', getMenuByQRCode);
+router.get('/menus/:code', publicMenuLimiter, getMenuByQRCode);
 
 export default router;
